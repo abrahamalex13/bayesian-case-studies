@@ -42,6 +42,9 @@ xy_dpareto <- bind_rows(
 p <- ggplot(xy_dpareto) + 
   geom_point(aes(x, y), size = .5) + 
   facet_wrap(~series, ncol = 1, scales = 'free_y') + 
-  labs(x = NULL, y = "Weight")
+  labs(x = "Total Taxi Count", y = "Weight", 
+       title = paste0("Prior Knowledge about Total Taxi Count: \n",
+                      "'Strength of Belief' in Possible Values")
+  )
 
 saveRDS(p, "viz_priors.rds")
