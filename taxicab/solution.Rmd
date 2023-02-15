@@ -21,25 +21,29 @@ viz_priors <- readRDS("viz_priors.rds")
 
 # A Classical Approach
 
-You already have intuition about how to proceed. The likelihood of what you observed -- taxicab #100 -- depends on how many taxis there are in total. Your estimate of total taxi count should somehow elevate the likelihood of what you observed.
+You already have intuition about how to proceed. The likelihood of the observed data -- taxicab #100 -- depends on how many taxis there are in total. Your estimate of total taxi count should somehow elevate the likelihood of what you observed.
 
-A classical approach: estimate a total taxi count which _maximizes_ the likelihood of what you observed.^["Maximum Likelihood Estimation" is a fundamental method in statistics.] An estimate of 101 follows. (Recall: numbering started at zero.) Why? Assuming the city has 101 taxicabs, the likelihood of observing taxicab #100 equals 1/101, or about 1%. Estimate any higher number of taxicabs, and this probability necessarily decreases.
+A classical approach: estimate a total taxi count which _maximizes_ the likelihood of the observed data.^["Maximum Likelihood Estimation" is a fundamental method in statistics.] Under this approach, we estimate 101 total taxis. (Numbering started at zero.) Why? When the city has 101 taxis, the likelihood of observing taxicab #100 equals 1/101. This probability decreases from its maximum if the taxi estimate rises above 101.
 
-However, this estimate is not exactly satisfying. This "optimal" estimate follows from a _narrowly-defined_ framework, which must be scrutinized. Then, a fundamental question arises: what if we simply observed an event with less-than-maximum likelihood? This feels entirely possible -- our lives are full of relatively surprising events. 
 
-Estimation error might decrease under a different statistical approach. How?
-Suppose that, _on average_, the classical approach correctly estimates total taxi count.
-Then, consider a useful definition of error: the estimate's **variance**
-(about the true value). **The path to error reduction becomes clear: 
-decrease estimate variance, without too much compromising average accuracy.**
+# Classical (Frequentist) Approach May Be Too Narrow for Our Problem
+
+**The classical estimate follows from a narrow approach, which may or may not address our true problem.** Suppose we want to quantify uncertainty in our estimate--or hypothesis--given the data we observe. The classical approach does not directly accommodate that calculation. The limitation traces back to the classical approach's fundamental definition of uncertainty/probability: event frequency over _repeated trials_. Hence the methodology name, "frequentism". 
+
+Classical estimation uncertainty quantifies probability of data--which in theory, we could repeatedly sample--given a hypothesis about the world. An analyst might say: "if this idea about the world were true, then I'm unlikely to observe these data or some still more extreme." 
+
+Importantly, frequentists do not quantify probability of a hypothesis--a single event--given data. For this calculation, we must employ a Bayesian approach.
 
 
 # A Bayesian Approach
 
-Consider an estimation approach partly _anchored_ to knowledge 
-beyond what's immediately observed. In this approach,
-we articulate and update "strength of belief" in possible values 
-for total taxi count^[This estimation approach follows Bayes' Theorem, another fundamental statement in statistics.]: 
+Suppose that we fundamentally define probability as, 
+our "strength of belief" in possible outcomes for an event.
+Now we can quantify the probability of a hypothesis, given data.
+
+TODO ---
+
+In the taxicab problem context, we:
 
 1. Specify prior knowledge about total taxi count, and then 
 2. Update that assessment, given what we observed (taxicab #100).
