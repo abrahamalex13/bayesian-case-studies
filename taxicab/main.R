@@ -2,49 +2,112 @@ rm(list=ls())
 library(tidyverse)
 library(EnvStats)
 
+N <- 10000
+x <- runif(N, min=0, max=1)
+x <- data.frame("mle" = x)
+ggplot(x) + 
+  geom_histogram(aes(mle), color='white')
+
+
 # NOTE: Murphy parameterizes Pareto(X | k=shape, m=location)
-generate_xy_dpareto <- function(par_pareto, x_dpareto, name_series) {
-  
-  data.frame(
-    "x" = x_dpareto
-    , "y" = dpareto(x_dpareto, 
-                    location = par_pareto[['location']],
-                    shape = par_pareto[['shape']])
-    , "series" = name_series
-    )
-  
-}
 
+x_step <- 1
 
-
-prior_uninform <- generate_xy_dpareto(
-  list("location" = 0.01, "shape" = .01),
-  seq(0, 50, by = .1),
-  name_series = "Scenario 0: Weak Prior Expectation"
+x <- seq(0, 100e3, by=x_step)
+prior_uninform <- data.frame(
+  "x" = x, "y" = dpareto(x, location=1e-4, shape=1e-4), 
+  "series" = "1: (Mathematically) Uninformative Prior Beliefs"
 )
 
-prior_lmle1 <- generate_xy_dpareto(
-  list("location" = 200, shape = .01),
-  seq(100, 1000, by = 1),
-  name_series = "Scenario 1: Pointed Prior Expectation"
+x <- seq(100, 100e3, by = x_step)
+prior_ebayes <- data.frame(
+  "x" = x, "y" = dpareto(x, location=100, shape=1e-2), 
+  "series" = "2: Prior Beliefs Anchor Toward 100 Taxis"
 )
 
-prior_lmle2 <- generate_xy_dpareto(
-  list("location" = 500, shape = .01),
-  seq(400, 1000, by = 1),
-  name_series = "Scenario 2: Pointed Prior Expectation"
+x <- seq(1000, 100e3, by = x_step)
+prior_outside <- data.frame(
+  "x" = x, "y" = dpareto(x, location=1000, shape=1e-1), 
+  "series" = "3: Prior Beliefs Anchor Toward 1,000 Taxis"
 )
 
-xy_dpareto <- bind_rows(
-  prior_uninform, prior_lmle1, prior_lmle2
+priors <- bind_rows(prior_uninform, prior_ebayes, prior_outside)
+
+p <- ggplot(priors %>% dplyr::filter(x <= 10e3)) + 
+  theme_minimal() + 
+  theme(axis.text.y=element_blank(), axis.ticks.y=element_blank(),
+        legend.position='top') + 
+  guides(linewidth = FALSE, color = guide_legend(nrow=3)) + 
+  geom_point(aes(x, y, group=series, color=series), size = .5) + 
+  labs(x = "Total Taxi Count", y = "Weight (Strength of Belief)", color=NULL,
+       title = "Prior Beliefs Over Hypotheses for Total Taxi Count"
   )
 
-p <- ggplot(xy_dpareto) + 
-  geom_point(aes(x, y), size = .5) + 
-  facet_wrap(~series, ncol = 1, scales = 'free_y') + 
-  labs(x = "Total Taxi Count", y = "Weight", 
-       title = paste0("Prior Knowledge about Total Taxi Count: \n",
-                      "'Strength of Belief' in Possible Values")
-  )
+# p <- ggplot(priors) +
+#   theme(axis.text.y=element_blank(), axis.ticks.y=element_blank()) +
+#   geom_point(aes(x, y), size = .5) +
+#   facet_wrap(~series, ncol = 1) +
+#   labs(x = "Total Taxi Count", y = "Weight",
+#        title = "Prior 'Strength of Belief' Over Hypotheses for Total Taxi Count"
+#   )
 
 saveRDS(p, "viz_priors.rds")
+
+
+x <- seq(100, 100e3, by=x_step)
+posterior_uninform <- data.frame(
+  "x" = x, "y" = dpareto(x, location=100, shape=1e-4 + 1), 
+  "series" = "1: (Mathematically) Uninformative Prior Beliefs"
+)
+
+x <- seq(100, 100e3, by = x_step)
+posterior_ebayes <- data.frame(
+  "x" = x, "y" = dpareto(x, location=100, shape=1e-2 + 1), 
+  "series" = "2: Prior Beliefs Anchor Toward 100 Taxis"
+)
+
+x <- seq(1000, 100e3, by = x_step)
+posterior_outside <- data.frame(
+  "x" = x, "y" = dpareto(x, location=1000, shape=1e-1 + 1), 
+  "series" = "3: Prior Beliefs Anchor Toward 1,000 Taxis"
+)
+
+posteriors <- bind_rows(
+  posterior_uninform, posterior_ebayes, posterior_outside
+)
+
+priors[['stage']] <- "Prior Beliefs"
+posteriors[['stage']] <- "Updated (Posterior) Beliefs"
+
+priors_posteriors <- bind_rows(priors, posteriors)
+
+priors_posteriors_t <- priors_posteriors %>% 
+  spread(key=stage, value=y)
+priors_posteriors_t %>% 
+  mutate(prior_lt_posterior = `Prior Beliefs` < `Updated (Posterior) Beliefs`,
+         x_lt_10e3 = x < 10e3) %>% 
+  group_by(series, x_lt_10e3) %>% 
+  summarize(mean(prior_lt_posterior, na.rm=TRUE))
+
+p <- ggplot(priors_posteriors %>% 
+              dplyr::filter(x <= 10e3)
+            ) + 
+  theme_minimal() +
+  theme(
+    axis.text.y=element_blank(), 
+    axis.ticks.y=element_blank(),
+    legend.position='top'
+    ) + 
+  geom_point(aes(x, y, color=stage), size = .5) + 
+  facet_wrap(~series, nrow = 1, labeller = label_wrap_gen()) + 
+  labs(x = "Total Taxi Count", 
+       y = "Weight (Strength of Belief)", 
+       color=NULL,
+       title = paste0("Updated vs Prior Beliefs ",
+                      "Over Hypotheses for Total Taxi Count"),
+       subtitle="After Seeing Taxi #100"
+  )
+
+saveRDS(p, "viz_priors_posteriors.rds")
+
+
