@@ -91,13 +91,13 @@ priors_posteriors_t %>%
 
 p <- ggplot(priors_posteriors %>% 
               dplyr::filter(x <= 10e3)
-            ) + 
+) + 
   theme_minimal() +
   theme(
     axis.text.y=element_blank(), 
     axis.ticks.y=element_blank(),
     legend.position='top'
-    ) + 
+  ) + 
   geom_point(aes(x, y, color=stage), size = .5) + 
   facet_wrap(~series, nrow = 1, labeller = label_wrap_gen()) + 
   labs(x = "Total Taxi Count", 
@@ -111,3 +111,59 @@ p <- ggplot(priors_posteriors %>%
 saveRDS(p, "viz_priors_posteriors.rds")
 
 
+# following Murphy's 3.9 notation
+posterior_predictive <- function(x, k, b) {
+  
+  max_D <- max(x)
+  N <- length(x)
+  
+  if (max_D <= b) {
+    k / ( (N + k)*(b)^N )
+  } else if (max_D > b) {
+    k * (b^k) / ( (N + k)*max_D^(N + k) )
+  }
+  
+}
+
+x <- seq(0.01, 1e6, by=.1)
+posterior_pred_uninform <- data.frame(
+  "x" = x,
+  "y1" = unlist(lapply(
+    x, FUN=posterior_predictive, k=1e-4, b=1e-4
+  )),
+  "y2" = unlist(lapply(
+    x, FUN=posterior_predictive, k=1+1e-4, b=1e-4
+  ))
+)
+apply(posterior_pred_uninform, MARGIN=2, function(x) sum(x))
+
+ggplot(posterior_pred_uninform %>% 
+         dplyr::filter(x <= 1000)) + 
+  geom_point(aes(x, y1), color='red') +
+  geom_point(aes(x, y2), color='blue')
+
+posterior_pred_ebayes <- data.frame(
+  "x" = x,
+  "y1" = unlist(lapply(
+    x, FUN=posterior_predictive, k=1e-2, b=100
+  )),
+  "y2" = unlist(lapply(
+    x, FUN=posterior_predictive, k=1+1e-2, b=100
+  ))
+)
+apply(posterior_pred_ebayes, MARGIN=2, function(x) sum(x))
+
+ggplot(posterior_pred_ebayes %>% 
+         dplyr::filter(x <= 1000)) + 
+  geom_point(aes(x, y1), color='red') +
+  geom_point(aes(x, y2), color='blue')
+
+posterior_pred_outside <- data.frame(
+  "x" = x,
+  "y1" = unlist(lapply(
+    x, FUN=posterior_predictive, k=1e-1, b=1000
+  )),
+  "y2" = unlist(lapply(
+    x, FUN=posterior_predictive, k=1+1e-1, b=1000
+  ))
+)
