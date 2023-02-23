@@ -2,16 +2,12 @@ rm(list=ls())
 library(tidyverse)
 library(EnvStats)
 
-N <- 10000
-x <- runif(N, min=0, max=1)
-x <- data.frame("mle" = x)
-ggplot(x) + 
-  geom_histogram(aes(mle), color='white')
-
 
 # NOTE: Murphy parameterizes Pareto(X | k=shape, m=location)
 
 x_step <- 1
+
+# analyze prior for Unif(0, \theta) ---------------------------------
 
 x <- seq(0, 100e3, by=x_step)
 prior_uninform <- data.frame(
@@ -43,16 +39,11 @@ p <- ggplot(priors %>% dplyr::filter(x <= 10e3)) +
        title = "Prior Beliefs Over Hypotheses for Total Taxi Count"
   )
 
-# p <- ggplot(priors) +
-#   theme(axis.text.y=element_blank(), axis.ticks.y=element_blank()) +
-#   geom_point(aes(x, y), size = .5) +
-#   facet_wrap(~series, ncol = 1) +
-#   labs(x = "Total Taxi Count", y = "Weight",
-#        title = "Prior 'Strength of Belief' Over Hypotheses for Total Taxi Count"
-#   )
-
 saveRDS(p, "viz_priors.rds")
 
+
+# analyze posteriors for Unif(0, \theta) ----------------------------
+# following single data observation 
 
 x <- seq(100, 100e3, by=x_step)
 posterior_uninform <- data.frame(
@@ -76,6 +67,8 @@ posteriors <- bind_rows(
   posterior_uninform, posterior_ebayes, posterior_outside
 )
 
+# analyze posterior relative to prior
+
 priors[['stage']] <- "Prior Beliefs"
 posteriors[['stage']] <- "Updated (Posterior) Beliefs"
 
@@ -83,15 +76,15 @@ priors_posteriors <- bind_rows(priors, posteriors)
 
 priors_posteriors_t <- priors_posteriors %>% 
   spread(key=stage, value=y)
+
+# how does probability mass concentrate across x?
 priors_posteriors_t %>% 
   mutate(prior_lt_posterior = `Prior Beliefs` < `Updated (Posterior) Beliefs`,
          x_lt_10e3 = x < 10e3) %>% 
   group_by(series, x_lt_10e3) %>% 
   summarize(mean(prior_lt_posterior, na.rm=TRUE))
 
-p <- ggplot(priors_posteriors %>% 
-              dplyr::filter(x <= 10e3)
-) + 
+p <- ggplot(priors_posteriors %>% dplyr::filter(x <= 10e3)) + 
   theme_minimal() +
   theme(
     axis.text.y=element_blank(), 
@@ -111,7 +104,9 @@ p <- ggplot(priors_posteriors %>%
 saveRDS(p, "viz_priors_posteriors.rds")
 
 
-# following Murphy's 3.9 notation
+# analyze posterior predictive ----------------
+
+# following Murphy's Problem 3.9 notation
 posterior_predictive <- function(x, k, b) {
   
   max_D <- max(x)
@@ -125,45 +120,62 @@ posterior_predictive <- function(x, k, b) {
   
 }
 
+# large upper bound, and small step size, help check that SUM(distr) = 1
+# discrete approximation will inevitably err
 x <- seq(0.01, 1e6, by=.1)
 posterior_pred_uninform <- data.frame(
   "x" = x,
-  "y1" = unlist(lapply(
+  "y_prior" = unlist(lapply(
     x, FUN=posterior_predictive, k=1e-4, b=1e-4
   )),
-  "y2" = unlist(lapply(
-    x, FUN=posterior_predictive, k=1+1e-4, b=1e-4
-  ))
+  "y_posterior" = unlist(lapply(
+    x, FUN=posterior_predictive, k=(1+1e-4), b=100
+  )),
+  "series" = "1: (Mathematically) Uninformative Prior Beliefs"
 )
-apply(posterior_pred_uninform, MARGIN=2, function(x) sum(x))
+# does probability mass sum to 1 over support?
+apply(posterior_pred_uninform[, c("y_prior", "y_posterior")], 
+      MARGIN=2, function(x) sum(x))
 
-ggplot(posterior_pred_uninform %>% 
-         dplyr::filter(x <= 1000)) + 
-  geom_point(aes(x, y1), color='red') +
-  geom_point(aes(x, y2), color='blue')
+# ggplot(posterior_pred_uninform %>% 
+#          dplyr::filter(x <= 1000)) + 
+#   geom_point(aes(x, y1), color='red') +
+#   geom_point(aes(x, y2), color='blue')
 
 posterior_pred_ebayes <- data.frame(
   "x" = x,
-  "y1" = unlist(lapply(
+  "y_prior" = unlist(lapply(
     x, FUN=posterior_predictive, k=1e-2, b=100
   )),
-  "y2" = unlist(lapply(
-    x, FUN=posterior_predictive, k=1+1e-2, b=100
-  ))
+  "y_posterior" = unlist(lapply(
+    x, FUN=posterior_predictive, k=(1+1e-2), b=100
+  )),
+  "series" = "2: Prior Beliefs Anchor Toward 100 Taxis"
 )
-apply(posterior_pred_ebayes, MARGIN=2, function(x) sum(x))
+apply(posterior_pred_ebayes %>% dplyr::select(y_prior, y_posterior), 
+      MARGIN=2, function(x) sum(x))
 
-ggplot(posterior_pred_ebayes %>% 
-         dplyr::filter(x <= 1000)) + 
-  geom_point(aes(x, y1), color='red') +
-  geom_point(aes(x, y2), color='blue')
+ggplot(posterior_pred_ebayes %>%
+         dplyr::filter(x <= 1000)) +
+  geom_point(aes(x, y_prior), color='red') +
+  geom_point(aes(x, y_posterior), color='blue')
 
 posterior_pred_outside <- data.frame(
   "x" = x,
-  "y1" = unlist(lapply(
+  "y_prior" = unlist(lapply(
     x, FUN=posterior_predictive, k=1e-1, b=1000
   )),
-  "y2" = unlist(lapply(
+  "y_posterior" = unlist(lapply(
     x, FUN=posterior_predictive, k=1+1e-1, b=1000
-  ))
+  )),
+  "series" = "3: Prior Beliefs Anchor Toward 1,000 Taxis"
 )
+
+posterior_pred <- bind_rows(
+  posterior_pred_uninform, posterior_pred_ebayes, posterior_pred_outside
+  )
+
+ggplot(posterior_pred %>% dplyr::filter(x <= 10e3)) + 
+  geom_point(aes(x, y_prior), color="Before Data") + 
+  geom_point(aes(x, y_posterior), color = "After Data")
+  
