@@ -7,12 +7,13 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
 
-do_main <- TRUE
+do_main <- FALSE
 if (do_main) {
   source("main.R")
 }
 viz_priors <- readRDS("viz_priors.rds")
 viz_priors_posteriors <- readRDS("viz_priors_posteriors.rds")
+viz_posterior_pred <- readRDS("viz_posterior_pred.rds")
 ```
 
 # Problem Statement
@@ -27,7 +28,7 @@ We already have intuition about how to proceed. The likelihood of the observed d
 A classical approach: estimate a total taxi count which _maximizes_ the likelihood of the observed data.^["Maximum Likelihood Estimation" is a fundamental method in statistics.] Under this approach, we estimate 101 total taxis. (Numbering started at zero.) Why? When the city has 101 taxis, the likelihood of observing taxicab #100 equals 1/101. This probability decreases from its maximum if the taxi estimate rises above 101.
 
 
-# Classical (Frequentist) Approach May Be Too Narrow for Our Problem
+# Classical (Frequentist) Solution May Be Too Narrow
 
 In its narrowness, the classical approach may fail to address our true problem. Suppose we want to quantify uncertainty in our estimate--or hypothesis--given the data we observe. The classical approach does not directly accommodate that calculation. The limitation traces back to the classical approach's fundamental definition of uncertainty/probability: event frequency over repeated trials. Hence the methodology name, "frequentism". 
 
@@ -80,5 +81,11 @@ We've observed only one taxi, and the next sighting could suggest a very differe
 
 ## Forecasting the Next Taxi
 
-We can apply our updated beliefs to forecast the next taxi we'll see. The calculation involves essentially averaging over our set of beliefs.   
+We can forecast the next taxi seen, using either beliefs set about total taxi count (updated and prior). The calculation essentially averages over beliefs set.
+
+Probability forecasts rise for next-taxi numbers made most likely under high-weight beliefs about total taxi count.
+
+```{r}
+  viz_posterior_pred
+```
 
