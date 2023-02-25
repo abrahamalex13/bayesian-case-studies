@@ -44,7 +44,7 @@ approx_discrete_pdf_integral(1000, x_max, prior_outside[['y']])
 priors <- bind_rows(prior_uninform, prior_ebayes, prior_outside)
 
 p <- ggplot(priors) + 
-  theme_minimal() + 
+  theme_minimal(base_size=12) + 
   theme(axis.text.y=element_blank(), axis.ticks.y=element_blank(),
         legend.position='top') + 
   guides(linewidth = FALSE, color = guide_legend(nrow=3)) + 
@@ -99,7 +99,7 @@ priors_posteriors_t <- priors_posteriors %>%
   spread(key=stage, value=y)
 
 p <- ggplot(priors_posteriors) + 
-  theme_minimal() +
+  theme_minimal(base_size=12) +
   theme(
     axis.text.y=element_blank(), 
     axis.ticks.y=element_blank(),
@@ -187,7 +187,7 @@ posterior_pred <- bind_rows(
   )
 
 p <- ggplot(posterior_pred) + 
-  theme_minimal() +
+  theme_minimal(base_size=12) +
   geom_point(aes(x, y_prior, color="Forecast From Prior Beliefs")) + 
   geom_point(aes(x, y_posterior, color = "Forecast From Updated Beliefs")) + 
   geom_hline(yintercept=0, linetype='dashed') + 
