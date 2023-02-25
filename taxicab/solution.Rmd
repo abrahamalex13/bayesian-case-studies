@@ -1,6 +1,6 @@
 ---
 title: "The Taxicab Problem"
-date: "11/6/2021"
+date: "2/28/2023"
 output: html_document
 ---
 
@@ -16,6 +16,10 @@ viz_priors_posteriors <- readRDS("viz_priors_posteriors.rds")
 viz_posterior_pred <- readRDS("viz_posterior_pred.rds")
 ```
 
+From two alternative definitions of probability--event frequency over repeated trials, or "strength of belief" in one event's possible outcomes--follow two statistical frameworks. The former "frequentist" philosophy estimates probability of data conditional on some hypothesis. The latter "Bayesian" philosophy expands scope, and estimates probability of both data and hypothesis.^[For more on how the philosophies assign probability to data and hypotheses, a helpful resource: https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2014/76926c6068c8b18e6ecb48d649b15bfd_MIT18_05S14_Reading20.pdf.]. We can see the two methods' first principles with an example problem: how many taxicabs are in an unfamiliar city?
+
+To reproduce my calculations, check out my [R code](https://github.com/abrahamalex13/bayesian-case-studies/blob/main/taxicab/main.R).
+
 # Problem Statement
 
 "Suppose you arrive in a new city and see a taxi numbered 100. How many taxis are there in this city?"^[I find this question in Kevin Murphy's _Machine Learning: A Probabilistic Perspective_. A great read!] Taxis are numbered 0, 1, 2, 3, ..., up to the last taxi.
@@ -30,7 +34,7 @@ A classical approach: estimate a total taxi count which _maximizes_ the likeliho
 
 # Classical (Frequentist) Solution May Be Too Narrow
 
-In its narrowness, the classical approach may fail to address our true problem. Suppose we want to quantify uncertainty in our estimate--or hypothesis--given the data we observe. The classical approach does not directly accommodate that calculation. The limitation traces back to the classical approach's fundamental definition of uncertainty/probability: event frequency over repeated trials. Hence the methodology name, "frequentism". 
+The classical approach may be too narrow to address our true problem. Suppose we want to quantify uncertainty in our estimate--or hypothesis--given the data we observe. The classical approach does not directly accommodate that calculation. The limitation traces back to the classical approach's fundamental definition of uncertainty/probability: event frequency over repeated trials. Hence the methodology name, "frequentism". 
 
 Classical estimation uncertainty quantifies probability of data--which in theory, we could repeatedly sample--given a hypothesis about the world. An analyst might say: "if this idea about the world were true, then I'm unlikely to observe these data or some still more extreme." 
 
@@ -81,11 +85,10 @@ We've observed only one taxi, and the next sighting could suggest a very differe
 
 ## Forecasting the Next Taxi
 
-We can forecast the next taxi seen, using either beliefs set about total taxi count (updated and prior). The calculation essentially averages over beliefs set.
+We can forecast the next taxi sighting, using either set of beliefs about total taxi count (updated and prior). We'll essentially average over our beliefs set.
 
 Probability forecasts rise for next-taxi numbers made most likely under high-weight beliefs about total taxi count.
 
 ```{r}
   viz_posterior_pred
 ```
-
