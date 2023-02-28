@@ -91,7 +91,7 @@ posteriors <- bind_rows(
 # analyze posterior relative to prior
 
 priors[['stage']] <- "Prior Beliefs"
-posteriors[['stage']] <- "Updated (Posterior) Beliefs"
+posteriors[['stage']] <- "Updated Beliefs"
 
 priors_posteriors <- bind_rows(priors, posteriors)
 
