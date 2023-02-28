@@ -1,5 +1,5 @@
 ---
-title: "The Taxicab Problem"
+title: "What's Probability Mean? Exploring a Taxicab Forecast"
 date: "2/28/2023"
 output: html_document
 ---
@@ -16,9 +16,13 @@ viz_priors_posteriors <- readRDS("viz_priors_posteriors.rds")
 viz_posterior_pred <- readRDS("viz_posterior_pred.rds")
 ```
 
-From two alternative definitions of probability--event frequency over repeated trials, or "strength of belief" in one event's possible outcomes--follow two statistical frameworks. The former "frequentist" philosophy estimates probability of data conditional on some hypothesis. The latter "Bayesian" philosophy expands scope, and estimates probability of both data and hypothesis.^[For more on how the philosophies assign probability to data and hypotheses, a helpful resource: https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2014/76926c6068c8b18e6ecb48d649b15bfd_MIT18_05S14_Reading20.pdf.]. We can see the two methods' first principles with an example problem: how many taxicabs are in an unfamiliar city?
+What's the meaning of _probability_? There are two primary views. The "frequentist" view defines probability as event frequency over repeated trials -- if a coin lands heads in 50 out of 100 flips, there's 50% probability of heads. On the other hand, the Bayesian view defines probability as "strength of belief" in possible outcomes of one trial -- how a single geopolitical event unfolds, for example. 
 
-To reproduce my calculations, check out my [R code](https://github.com/abrahamalex13/bayesian-case-studies/blob/main/taxicab/main.R).
+From the two views of probability follow two statistical philosophies. Each philosophy involves (1) observed data and (2) hypotheses about the process which generates those data. **The "frequentist" philosophy estimates probability of data after assuming a hypothesis**--the hypothesis itself has no probability, as it lacks a repeated trial nature. **The Bayesian philosophy estimates probability of both data and hypothesis**.^[For more on how the philosophies assign probability to data and hypotheses, a helpful resource: https://ocw.mit.edu/courses/18-05-introduction-to-probability-and-statistics-spring-2014/76926c6068c8b18e6ecb48d649b15bfd_MIT18_05S14_Reading20.pdf.]. 
+
+We can see these two philosophies' first principles with an example problem: how many taxicabs are in an unfamiliar city?
+
+For more about the calculations that follow, check out my [R code](https://github.com/abrahamalex13/bayesian-case-studies/blob/main/taxicab/main.R).
 
 # Problem Statement
 
@@ -27,16 +31,16 @@ To reproduce my calculations, check out my [R code](https://github.com/abrahamal
 
 # A Classical Approach
 
-We already have intuition about how to proceed. The likelihood of the observed data -- taxicab #100 -- depends on how many taxis there are in total. Our estimate of total taxi count should somehow elevate the likelihood of what you observed.
+We already have intuition about how to proceed. The likelihood of the observed data -- taxicab #100 -- depends on how many taxis there are in total. Our estimate of total taxi count should somehow elevate the likelihood of what we observed.
 
 A classical approach: estimate a total taxi count which _maximizes_ the likelihood of the observed data.^["Maximum Likelihood Estimation" is a fundamental method in statistics.] Under this approach, we estimate 101 total taxis. (Numbering started at zero.) Why? When the city has 101 taxis, the likelihood of observing taxicab #100 equals 1/101. This probability decreases from its maximum if the taxi estimate rises above 101.
 
 
 # Classical (Frequentist) Solution May Be Too Narrow
 
-The classical approach may be too narrow to address our true problem. Suppose we want to quantify uncertainty in our estimate--or hypothesis--given the data we observe. The classical approach does not directly accommodate that calculation. The limitation traces back to the classical approach's fundamental definition of uncertainty/probability: event frequency over repeated trials. Hence the methodology name, "frequentism". 
+The classical approach may be too narrow to address our true problem. Suppose we want to quantify uncertainty in our total taxi estimate (hypothesis), given the data we observe. The classical approach does not directly accommodate that calculation. The limitation traces back to the classical approach's fundamental definition of uncertainty/probability: event frequency over repeated trials. Hence the methodology name, "frequentism". 
 
-Classical estimation uncertainty quantifies probability of data--which in theory, we could repeatedly sample--given a hypothesis about the world. An analyst might say: "if this idea about the world were true, then I'm unlikely to observe these data or some still more extreme." 
+Classical estimation uncertainty quantifies probability of data--which we could repeatedly sample, in theory--given a hypothesis about the world. An analyst might say: "if this idea about the world were true, then I'm unlikely to observe these data or some still more extreme." 
 
 Frequentists do not quantify probability of a hypothesis--a single event--given data. For this calculation, we must take a different approach.
 
