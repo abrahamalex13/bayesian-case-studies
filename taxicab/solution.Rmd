@@ -1,5 +1,5 @@
 ---
-title: "What's Probability Mean? Exploring a Taxicab Forecast"
+title: "What's Probability Mean? A Taxicab Forecasting Case"
 date: "2/28/2023"
 output: html_document
 ---
