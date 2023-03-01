@@ -54,7 +54,7 @@ The procedure follows directly from a
 fundamental statistical statement, Bayes' Theorem:
 
 1. Quantify prior belief over hypotheses in a complete set 
-2. Update beliefs: up-weighting hypotheses which make observed data more likely, down-weighting hypotheses which make observed data less unlikely
+2. Update beliefs: up-weighting hypotheses which make observed data more likely, down-weighting hypotheses which make observed data less likely
 
 We see this approach in action with the taxicab problem. 
 
