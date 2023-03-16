@@ -1,0 +1,17 @@
+---
+title: "A Drift Detection Building Block: Kullback-Leibler Divergence"
+date: "3/15/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
+
+viz_priors <- readRDS("viz_priors.rds")
+viz_priors_posteriors <- readRDS("viz_priors_posteriors.rds")
+viz_posterior_pred <- readRDS("viz_posterior_pred.rds")
+```
+
+# KL Divergence Measures Dissimilarity Between Distributions
+# First Define Monitoring Window, then KL Divergence Test Structure Follows
+## Case Example: Cars
