@@ -12,6 +12,13 @@ viz_priors_posteriors <- readRDS("viz_priors_posteriors.rds")
 viz_posterior_pred <- readRDS("viz_posterior_pred.rds")
 ```
 
+A key problem in data analysis, especially a data analysis _system_: how to automatically detect data drift? 
+KL Divergence is a fast, automatic measure of dissimilarity between distributions.
+But "how large is too large", thus indicating drift?
+Solve that problem with _classical statistics_.
+With a simple formula, and classical statistics framework,
+we have a building block for automated drift detection.
+
 # KL Divergence Measures Dissimilarity Between Distributions
 # First Define Monitoring Window, then KL Divergence Test Structure Follows
 ## Case Example: Cars
