@@ -7,9 +7,6 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
 
-viz_priors <- readRDS("viz_priors.rds")
-viz_priors_posteriors <- readRDS("viz_priors_posteriors.rds")
-viz_posterior_pred <- readRDS("viz_posterior_pred.rds")
 ```
 
 A key problem in data analysis, especially a data analysis _system_: how to automatically detect data drift? 
@@ -19,6 +16,27 @@ Solve that problem with _classical statistics_.
 With a simple formula, and classical statistics framework,
 we have a building block for automated drift detection.
 
-# KL Divergence Measures Dissimilarity Between Distributions
+# KL Divergence Measures Dissimilarity Between Probability Distributions
+
+Suppose we have two probability distributions (a distribution defines
+the likelihood of generating a data value, over all possible values).
+To measure the distributions' dissimilarity, we may:
+
+- compute the difference between their probabilities,
+- weight, and
+- sum
+
+$$
+  KL = \sum_{k=1}^K p_k log \frac{p_k}{q_k}
+$$
+
+For apples-to-apples comparison, we difference the distributions' probabilities 
+_within-group_ of data values _k_. So KL Divergence 
+
+
+
+
+
+
 # First Define Monitoring Window, then KL Divergence Test Structure Follows
 ## Case Example: Cars
