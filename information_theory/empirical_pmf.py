@@ -8,8 +8,8 @@ def empirical_pmf(x, nobs_lt_pool_other, categories=[], include_other=True):
     Treat high cardinality: pool OTHER from rare categories 
     (nobs < nobs_lt_pool_other).
 
-    If pre-defining categories and not including 'OTHER' for novel levels, 
-    *only pre-defined categories appear in pmf support.* 
+    *Pre-defined categories will compose the pmf support,
+    with the exception of 'OTHER' for novel levels, if `include_other`.*
 
     Pre-defined categories ensure alignment of distributions in KL Divergence, 
     for example.
