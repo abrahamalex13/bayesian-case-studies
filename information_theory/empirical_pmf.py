@@ -1,15 +1,18 @@
 import pandas as pd
 
 
-def empirical_pmf(x, nobs_lt_pool_other, categories=[], include_other=False):
+def empirical_pmf(x, nobs_lt_pool_other, categories=[], include_other=True):
     """
     Given discrete-valued data vector `x`, augment frequency tabulations. 
     
     Treat high cardinality: pool OTHER from rare categories 
     (nobs < nobs_lt_pool_other).
 
-    May pre-define pmf categories, pooling novel categories into OTHER.
-    (Ensures alignment between distributions in KL Divergence, for example.)
+    If pre-defining categories and not including 'OTHER' for novel levels, 
+    *only pre-defined categories appear in pmf support.* 
+
+    Pre-defined categories ensure alignment of distributions in KL Divergence, 
+    for example.
     
     For pmf exhaustiveness, may ensure OTHER category.
 
