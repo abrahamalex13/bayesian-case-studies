@@ -1,3 +1,4 @@
+ipykernel==6.15.2
 numpy==1.21.5
 kaggle==1.5.13
 python-dotenv==1.0.0
