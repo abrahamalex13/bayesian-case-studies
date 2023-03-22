@@ -4,3 +4,5 @@ python-dotenv==1.0.0
 plotnine==0.10.1
 pandas==1.4.4
 scipy==1.9.1
+pathlib==1.0.1
+pytest==7.1.2
