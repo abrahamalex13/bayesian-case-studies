@@ -1,5 +1,5 @@
 ---
-title: "A Drift Detection Building Block: Kullback-Leibler Divergence"
+title: "Automated Drift Detection Building Block: KL Divergence"
 date: "3/15/2023"
 output: html_document
 ---
@@ -12,7 +12,27 @@ knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
 A key problem in data analysis, especially a data analysis _system_: how to automatically detect data drift? 
 KL Divergence is a fast, automatic measure of dissimilarity between distributions.
 But "how large is too large", thus indicating drift?
-Solve that problem with _classical statistics_.
+
+Solve that problem with _classical statistics_--hypothesis testing, specifically.
+First, establish the question: does one probability distribution 
+differ (drift) from a baseline probability distribution? 
+To assess, we need the range of feasible values when that condition is true.
+Called the statistic's _sampling distribution_.
+(
+    When a new observations test set does truly generate from
+    population probability distribution q, 
+    KL Divergence sampling variation partly controlled by:
+        - Test set sample size (small sample size, wider variation)
+)
+
+We can estimate the sampling 
+under the condition of no data drift, 
+simulate the range of feasible KL Divergence values, through data re-sampling. 
+Then, measure/contextualize a new value relative to that feasible range. 
+Estimate the probability of a value still more extreme.
+When that probability ("p-value") is low, then reject a baseline hypothesis of no-drift.
+
+
 With a simple formula, and classical statistics framework,
 we have a building block for automated drift detection.
 
@@ -34,11 +54,19 @@ $$
   KL = \sum_{k=1}^K p_k log \frac{p_k}{q_k}
 $$
 
-The measure rises as the two distributions assign increasingly different probability to a data segment. And that difference matters more for high-probability segments of _p_. Regarding special cases: the measure equals zero when the distributions are identical, or it approaches infinity when a data segment has probability zero under _q_ but nonzero under _p_.
+As a data segment's probability increasingly differs between the two distributions,
+the measure rises. And that difference matters more for high-probability segments. 
+Regarding special cases: the measure equals zero when the distributions are identical, 
+or it approaches infinity when a data segment has probability zero under _q_ but nonzero under _p_.
 
 KL Divergence is a fast calculation of distributions' dissimilarity.
 But how do we make meaning of a KL Divergence value? 
 What's a large value or a small value? 
 
-# First Define Monitoring Window, then KL Divergence Test Structure Follows
+# To Assess KL Divergence, Use Distribution Under No Data Drift
+
+# Assuming No Data Drift, What's the Probability of this KLD or Yet More Extreme?
+
+
+
 ## Case Example: Cars
