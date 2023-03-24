@@ -7,6 +7,8 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE, fig.align = 'center')
 
+DIR_PLOTS <- paste0("figures") 
+
 ```
 
 A key problem in data analysis, especially a data analysis _system_: 
@@ -87,10 +89,47 @@ We've articulated a sound method. Let's apply it.
 
 PASTE CARVANA DATA DETAIL FROM FORMER BLOG
 
-We compare a 49K-obs test set of car makes to the 72K-obs historical distribution of car makes.
+We compare a test set's probability distribution to the historical distribution.
+Because we estimate each distribution by summarizing data observations,
+our results are sensitive to observation counts. In the results that follow,
+we'll vary test set observation count, and always use the entire historical data.
+Considering the entire data: there are about 49,000 test observations, 
+and about 72,000 historical observations.
 
-The overall visualization suggests, visually insignificant drift in make distribution (admitting uncertainty about precise business interpretation)
+## Visualize Distributions Estimated from Entire Data
 
-CHART
+If we estimate the test set probability distribution from the entire data --  
+we might suspect an insignificant drift in distribution, 
+without precise domain knowledge to tell us otherwise:
 
-However, 
+```{r}
+  knitr::include_graphics(paste0(DIR_PLOTS, "/drift_viz_overall.png"))
+```
+
+## Visualize Extreme Distribution Under No Drift, n=49K Test Set
+
+How can we devise an automated test to align with the entire data implication,
+and flag us when there's _significant_ drift? 
+_We must tune test set nobs, which yields the KL Divergence feasible values under no drift._ 
+If we choose test set nobs too high, our drift test will be too sensitive.
+We should not expect real data reflect precisely zero drift -- 
+the data-generating conditions are complex, dynamic, and likely time-varying.
+This thought process parallels a broader theme in statistical testing
+for distributional alignment^[https://www.allendowney.com/blog/2023/01/28/never-test-for-normality/, 
+https://allendowney.github.io/ElementsOfDataScience/anderson.html].
+So we must tune our testing to reflect _practically significant_ drift,
+above _statistically significant_ drift.
+
+```{r}
+  knitr::include_graphics(paste0(DIR_PLOTS, "/drift_viz_boot_naive.png"))
+```
+
+## Visualize Extreme Distribution Under No Drift, n=100 Test Set
+
+When we tune test set nobs to a level that allows wider variation in KL Divergence,
+we arrive at a test that captures _practically significant_ drift. 
+Now we'd be alerted when the extent of drift looks like below:
+
+```{r}
+  knitr::include_graphics(paste0(DIR_PLOTS, "/drift_viz_boot_tuned.png"))
+```
