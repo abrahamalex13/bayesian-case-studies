@@ -59,29 +59,38 @@ So KL Divergence is a fast calculation of distributions' dissimilarity.
 But how do we make meaning of a KL Divergence value? 
 What's a large value or a small value? 
 
-# KL Divergence Meaning is Relative to Distribution Under No Data Drift
+# For Data Drift Test, Measure KL Divergence Relative to Other No-Drift Scenarios
 
 In data drift testing, KL Divergence's meaning is _relative_--
-relative to the range of feasible values under no data drift. 
+relative to its range of values under no-drift scenarios. 
 Even under no data drift, KL Divergence should vary from zero,
 due to randomness in data sampling. 
 And with smaller data samples, KL Divergence should vary more widely.
-Fortunately we can estimate the range of feasible values under no data drift,
+We can estimate the range of values under no data drift,
 by simulating repeated data samples.
 
-KL Divergence's meaning connects to our primary question: 
-how much does one probability distribution differ (drift) from a baseline distribution? 
-If _among the no-data-drift feasible values_,
-a more extreme statistic is rarely seen,
-then we challenge the premise of no data drift.
+KL Divergence's relative value provides evidence for the question: 
+how much does one probability distribution drift from a baseline distribution? 
+If among no-drift scenarios, a more extreme KL is rarely seen,
+then we question the premise of no data drift.
 
-The above intuition reflects classical statistics hypothesis testing:
-- we established a question about the data population
-- we assumed an answer (no drift between the two probability distributions)
-- we calculated a test statistic (as well as its feasible values, or "sampling distribution", under no drift)
-- on the condition of the assumed answer, we calculated conditional probability ("p-value") of a still-more-extreme test statistic
-- we challenged our assumption if it implied an observed outcome too improbable
+## "First Principles" Testing Approach Parallels Classical Hypothesis Testing
 
+With intuition and first principles, we've formulated a drift test from KL Divergence.
+Classical hypothesis testing may frame our specific steps:
+
+- Declare a question about _population(s)_ underlying data 
+  - Does one data distribution drift from another?
+- Propose a baseline (null) hypothesis, to be tested
+  - Assume no data drift--setting up comparison to other no-drift scenarios
+- Devise a test statistic, having known range of values under correct null hypothesis (having known _sampling distribution_)
+  - Simulate the range of KL Divergence values under no drift 
+- Calculate test statistic for observed data
+  - Calculate KL Divergence between test and baseline distributions
+- Measure test statistic relative to its range of values under correct null hypothesis. May compute _p-value_: probability of a test statistic with equal or greater extremity, assuming correct null hypothesis.
+  - Measure KL Divergence relative to its values in no-drift scenarios
+- Evaluate null hypothesis's reasonableness, according to implied likelihood of observed data
+  - If among no-drift scenarios, a more extreme KL is rarely seen, then question the premise of no data drift.
 
 # Case Example: Cars
 
