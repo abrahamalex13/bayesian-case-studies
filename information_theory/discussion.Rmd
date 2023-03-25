@@ -61,18 +61,18 @@ What's a large value or a small value?
 
 # KL Divergence Meaning is Relative to Distribution Under No Data Drift
 
-When testing for data drift, KL Divergence's meaning is _relative_--
+In data drift testing, KL Divergence's meaning is _relative_--
 relative to the range of feasible values under no data drift. 
 Even under no data drift, KL Divergence should vary from zero,
 due to randomness in data sampling. 
-And when working with smaller samples, KL Divergence should vary more widely.
+And with smaller data samples, KL Divergence should vary more widely.
 Fortunately we can estimate the range of feasible values under no data drift,
 by simulating repeated data samples.
 
-Given a KL Divergence statistic, we ask: 
-does one probability distribution differ (drift) from the baseline distribution? 
+KL Divergence's meaning connects to our primary question: 
+how much does one probability distribution differ (drift) from a baseline distribution? 
 If _among the no-data-drift feasible values_,
-a more extreme statistic is improbable,
+a more extreme statistic is rarely seen,
 then we challenge the premise of no data drift.
 
 The above intuition reflects classical statistics hypothesis testing:
