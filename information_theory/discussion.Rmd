@@ -32,6 +32,88 @@ When that probability ("p-value") is low, then reject a baseline hypothesis of n
 With a simple formula, and classical statistics framework,
 we have a building block for automated drift detection.
 
+
+How can we devise an automated test to align with the entire data implication,
+and flag us when there's _significant_ drift? 
+_We must tune test set nobs, which yields the KL Divergence feasible values under no drift._ 
+If we choose test set nobs too high, our drift test will be too sensitive.
+
+
+# A Data Drift Case Study: Lemons at Carvana
+
+Let's assess data distribution _drift_ between a test set and historical set.
+Said another way, how dissimilar is the test data distribution from historical?
+Conclusions depend on the test dataset's observation count--
+with smaller data samples, the drift measure (KL Divergence) should vary more widely. 
+So we'll examine different choices of test dataset size,
+ultimately _tuning_ the decision for our use case.
+
+Let's study real data made available by Carvana.
+PASTE CARVANA DATA DETAIL FROM FORMER BLOG
+
+Considering the entire data: there are about 49,000 test observations, 
+and about 72,000 historical observations.
+
+Let's examine drift in Make, specifically.
+
+## Manually Compare Distributions from Entire Data
+
+Let's first eyeball the extent of drift, using the entire data. 
+This manual assessment will help tune an automated method,
+_useful for live future monitoring_.
+
+Visually, the probability distribution appears similar, test versus historical:
+
+```{r}
+  knitr::include_graphics(paste0(DIR_PLOTS, "/drift_viz_overall.png"))
+```
+
+In the absence of deeper domain knowledge to suggest otherwise,
+let's propose the ground truth of no meaningful data drift.
+The same assessment should arise from a properly-tuned automated method.
+
+## Statistically, Test Set Has Drifted (As Expected)
+
+For automated data drift detection to perceive no drift,
+a test event must compare similarly to other no-drift scenarios. 
+Even under no _population_ data drift,
+data _samples_ will not have identical distributions.
+
+We can simulate no-drift scenarios from the historical set--
+by repeated data sampling, with specific sample size.
+Using each scenario's distribution drift measure 
+(KL Divergence, described farther down), 
+we can review extreme possible scenarios, 
+and assign relative score to a new test event.
+
+It turns out that a test set of ~49,000 observations
+would practically never appear drifted to the entire data extent.
+When a test set of ~49,000 observations draws direct from historical,
+the apparent drift will rarely appear more extreme than below:
+
+```{r}
+  knitr::include_graphics(paste0(DIR_PLOTS, "/drift_viz_boot_naive.png"))
+```
+
+We should not expect real data to reflect zero drift -- 
+the generating conditions are dynamic and likely time-varying.
+This thought process parallels a broader theme in statistical testing
+for distributional alignment^[https://www.allendowney.com/blog/2023/01/28/never-test-for-normality/, 
+https://allendowney.github.io/ElementsOfDataScience/anderson.html].
+So we must tune our testing to reflect _practically significant_ drift,
+above _statistically significant_ drift.
+
+## Visualize Extreme Distribution Under No Drift, n=100 Test Set
+
+When we tune test set nobs to a level that allows wider variation in KL Divergence,
+we arrive at a test that captures _practically significant_ drift. 
+Now we'd be alerted when the extent of drift looks like below:
+
+```{r}
+  knitr::include_graphics(paste0(DIR_PLOTS, "/drift_viz_boot_tuned.png"))
+```
+
+
 # KL Divergence Measures Dissimilarity Between Probability Distributions
 
 Suppose we have two probability distributions (a distribution defines
@@ -58,6 +140,7 @@ or it approaches infinity when a data segment has probability zero under _q_ but
 So KL Divergence is a fast calculation of distributions' dissimilarity.
 But how do we make meaning of a KL Divergence value? 
 What's a large value or a small value? 
+
 
 # For Data Drift Test, Measure KL Divergence Relative to Other No-Drift Scenarios
 
@@ -91,54 +174,3 @@ Classical hypothesis testing may frame our specific steps:
   - Measure KL Divergence relative to its values in no-drift scenarios
 - Evaluate null hypothesis's reasonableness, according to implied likelihood of observed data
   - If among no-drift scenarios, a more extreme KL is rarely seen, then question the premise of no data drift.
-
-# Case Example: Cars
-
-We've articulated a sound method. Let's apply it.
-
-PASTE CARVANA DATA DETAIL FROM FORMER BLOG
-
-We compare a test set's probability distribution to the historical distribution.
-Because we estimate each distribution by summarizing data observations,
-our results are sensitive to observation counts. In the results that follow,
-we'll vary test set observation count, and always use the entire historical data.
-Considering the entire data: there are about 49,000 test observations, 
-and about 72,000 historical observations.
-
-## Visualize Distributions Estimated from Entire Data
-
-If we estimate the test set probability distribution from the entire data --  
-we might suspect an insignificant drift in distribution, 
-without precise domain knowledge to tell us otherwise:
-
-```{r}
-  knitr::include_graphics(paste0(DIR_PLOTS, "/drift_viz_overall.png"))
-```
-
-## Visualize Extreme Distribution Under No Drift, n=49K Test Set
-
-How can we devise an automated test to align with the entire data implication,
-and flag us when there's _significant_ drift? 
-_We must tune test set nobs, which yields the KL Divergence feasible values under no drift._ 
-If we choose test set nobs too high, our drift test will be too sensitive.
-We should not expect real data reflect precisely zero drift -- 
-the data-generating conditions are complex, dynamic, and likely time-varying.
-This thought process parallels a broader theme in statistical testing
-for distributional alignment^[https://www.allendowney.com/blog/2023/01/28/never-test-for-normality/, 
-https://allendowney.github.io/ElementsOfDataScience/anderson.html].
-So we must tune our testing to reflect _practically significant_ drift,
-above _statistically significant_ drift.
-
-```{r}
-  knitr::include_graphics(paste0(DIR_PLOTS, "/drift_viz_boot_naive.png"))
-```
-
-## Visualize Extreme Distribution Under No Drift, n=100 Test Set
-
-When we tune test set nobs to a level that allows wider variation in KL Divergence,
-we arrive at a test that captures _practically significant_ drift. 
-Now we'd be alerted when the extent of drift looks like below:
-
-```{r}
-  knitr::include_graphics(paste0(DIR_PLOTS, "/drift_viz_boot_tuned.png"))
-```
