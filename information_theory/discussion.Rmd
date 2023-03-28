@@ -1,5 +1,5 @@
 ---
-title: "Automated Drift Detection Building Block: KL Divergence"
+title: "Data Drift Detection, from First Principles"
 date: "3/15/2023"
 output: html_document
 ---
@@ -11,43 +11,21 @@ DIR_PLOTS <- paste0("figures")
 
 ```
 
-A key problem in data analysis, especially a data analysis _system_: 
-how to automatically detect data drift? 
-KL Divergence is a fast, automatic measure of dissimilarity between distributions.
-But "how large is too large", thus indicating drift?
+How might an autonomous data analysis system detect _data drift_: shifts in data distribution? Depending on context, shifting data distributions may imply new opportunities for fast action, or new risks to be mitigated. This post proposes an automated drift detection method, tailored for categorical data.
 
-Solve that problem with _classical statistics_--hypothesis testing, specifically.
-First establish the question: does one probability distribution 
-differ (drift) from a baseline probability distribution? 
-To assess, we need the range of feasible values when that condition is true.
-Called the statistic's _sampling distribution_.
+**The objective: detect practically significant drift between _test_ and _historical_ population distributions, in light of sample evidence.** Even under no _population_ data drift, data _samples_ drift to varying extents. To assess whether one test sample has "critically" drifted, compare to a point of reference: other samples under no population drift (available via simulation). Samples compare automatically because each one reduces to a drift statistic: Kullback-Leibler (KL) Divergence. Then, drift detection alerts when a drift statistic exceeds a critical value, tuned for the application. Reference sample visualizations help with this tuning.
 
-We can estimate the sampling 
-under the condition of no data drift, 
-simulate the range of feasible KL Divergence values, through data re-sampling. 
-Then, measure/contextualize a new value relative to that feasible range. 
-Estimate the probability of a value still more extreme.
-When that probability ("p-value") is low, then reject a baseline hypothesis of no-drift.
+Our "first principles" logic chain parallels hypothesis testing from classical statistics.
 
-With a simple formula, and classical statistics framework,
-we have a building block for automated drift detection.
-
-
-How can we devise an automated test to align with the entire data implication,
-and flag us when there's _significant_ drift? 
-_We must tune test set nobs, which yields the KL Divergence feasible values under no drift._ 
-If we choose test set nobs too high, our drift test will be too sensitive.
-
+Check out my code implementation [here](https://github.com/abrahamalex13/bayesian-case-studies/tree/main/information_theory).
 
 # A Data Drift Case Study: Lemons at Carvana
 
-Given two datasets, (1) test and (2) historical -- let's assess data distribution _drift_. How dissimilar are the test and historical _population distributions_, in light of the sample evidence? Conclusions depend on the test dataset's observation count. In smaller data samples, there's more variability in the drift statistic (KL Divergence, described later). *Ultimately we'll tune an automated method to detect meaningful data drifts.*
+Given two datasets, (1) test and (2) historical -- let's assess data distribution _drift_. How dissimilar are the test and historical _population distributions_, in light of the sample evidence? Conclusions depend on the test dataset's observation count. In smaller data samples, there's more variability in the drift statistic (KL Divergence, described later). Ultimately we'll tune an automated method to detect meaningful data drift.
 
-Let's study real data from Carvana.
-PASTE CARVANA DATA DETAIL FROM FORMER BLOG.
-In total, Carvana shares about 49,000 test observations and 73,000 historical observations.
+Let's study real data from Carvana, a car retailer. Around 2012, Carvana posted wholesale auto auction transaction data for a prediction [competition](https://www.kaggle.com/c/DontGetKicked). The instruction: “predict if a car purchased at auction is a lemon.” Carvana defines a lemon as a car with “serious issues that prevent it from being sold to customers […] [such as] tampered odometers, mechanical issues the dealer is not able to address, issues with getting the vehicle title from the seller,” etc. In total, Carvana shares about 49,000 test observations and 73,000 historical observations.
 
-Specifically, let's assess drift in car's Make.
+Let's assess drift in car's Make, specifically.
 
 ## Manually Assess Distribution Drift, with Entire Data
 
@@ -62,53 +40,53 @@ The probability distribution appears (visually) similar, test versus historical:
 
 Without deeper domain knowledge to suggest otherwise,
 let's adopt the ground truth of no meaningful data drift.
-The same assessment should arise from a properly-tuned automated method.
+The same assessment should arise from a well-tuned automated method.
 
-## Statistically, Test Data Have Drifted (As Expected)
+## Statistically, Large Test Data Have Drifted (As Expected)
 
-For an automated method to detect no data drift,
-a test sample must compare similarly to other samples under no population drift.
+To assess whether the full test sample has "critically" drifted, 
+we compare to a point of reference: other samples under no population drift
+(available via simulation).
 Even under no _population_ data drift, 
 data _samples_ will reflect a range of drift.
-
-We simulate samples under no population drift,
-by repeated draws direct from historical data.
-Each data sample's drift extent is quantifiable,
-via the KL Divergence statistic (described later).
-With these drift statistics we may declare a critical value:
-if a new test sample's drift exceeds, automated detection will flag.
-It's important to visually confirm "critical drift",
-which decreases as sample size increases.
+_To start, let's draw each reference sample
+to have the same size as the full test sample._ 
+Next, each sample reduces to a drift statistic (KL Divergence, described later),
+allowing easy comparisons.
 
 Turns out, the full test sample drifts more from historical
-than practically any same-size sample under no population drift.
-Under no population drift, same-size test sample drift rarely exceeds this level:
+than practically any reference sample under no population drift.
+Under no population drift, a sample of this size should hardly drift at all:
 
 ```{r}
   knitr::include_graphics(paste0(DIR_PLOTS, "/drift_viz_boot_naive.png"))
 ```
 
-Real data--generated by dynamic processes--
-might be expected to drift, technically speaking.
-This theme appears in other statistical tests of distributions^[See https://www.allendowney.com/blog/2023/01/28/never-test-for-normality/, or
+Real, large data might be expected to technically drift--generating processes should be highly dynamic.
+This theme also appears in other statistical tests of distributions^[See https://www.allendowney.com/blog/2023/01/28/never-test-for-normality/, or
 https://allendowney.github.io/ElementsOfDataScience/anderson.html].
 So we must tune our method to detect _practically significant_ population drift,
 above _statistically significant_ drift.
 
-## Practical Drift Detection Tunes to Appropriate Sensitivity
+## Practical Drift Detection Tunes to Proper Sensitivity
 
-Automated drift detection will be less sensitive if
-it learns from no-drift scenarios with smaller data samples.
-In smaller data samples, the drift measure should vary more widely.
-Ultimately we tune to a method that captures _practically significant_ drift. 
-Now we'd be alerted when drift extremity meets or exceeds below:
+To raise the magnitude of "critical drift" that's auto-detected,
+we utilize smaller samples under no population drift. 
+Among smaller data samples, we find larger drift statistics--more sensible critical values. Again a choice of "critical drift"
+must be visually confirmed for proper sensitivity.
+
+We tune to detect _practically significant_ drift. 
+The following chart shows a proposed tuning for "critical drift":
 
 ```{r}
   knitr::include_graphics(paste0(DIR_PLOTS, "/drift_viz_boot_tuned.png"))
 ```
 
-We've arrived at an algorithm which flags drift at an appropriate threshold,
-_useful for live future monitoring_.
+In live future monitoring, 
+when a new sample's drift extremity meets or exceeds above,
+we'd be automatically alerted.
+
+More method details follow.
 
 # KL Divergence Measures Dissimilarity Between Probability Distributions
 
@@ -138,35 +116,34 @@ But how do we make meaning of a KL Divergence value?
 What's a large value or a small value? 
 
 
-# For Data Drift Test, Measure KL Divergence Relative to Other No-Drift Scenarios
+# For Data Drift Test, KL Divergence Meaning is Relative
 
 In data drift testing, KL Divergence's meaning is _relative_--
-relative to its range of values under no-drift scenarios. 
-Even under no data drift, KL Divergence should vary from zero,
-due to randomness in data sampling. 
+relative to its range of values under no population drift. 
+Even under no _population_ drift, 
+data _samples'_ KL Divergence should vary from zero.
 And with smaller data samples, KL Divergence should vary more widely.
-We can estimate the range of values under no data drift,
-by simulating repeated data samples.
+We can estimate the range of sample values under no population drift,
+by repeated data sample draws.
 
 KL Divergence's relative value provides evidence for the question: 
 how much does one probability distribution drift from a baseline distribution? 
-If among no-drift scenarios, a more extreme KL is rarely seen,
+If among no-population drift scenarios, a more extreme KL is rarely seen,
 then we question the premise of no data drift.
 
 ## "First Principles" Testing Approach Parallels Classical Hypothesis Testing
 
-With intuition and first principles, we've formulated a drift test from KL Divergence.
-Classical hypothesis testing may frame our specific steps:
+With intuition and first principles, we've formulated a drift test from KL Divergence. Classical hypothesis testing frames our specific steps:
 
 - Declare a question about _population(s)_ underlying data 
-  - Does one data distribution drift from another?
+  - Does one population probability distribution drift from another?
 - Propose a baseline (null) hypothesis, to be tested
-  - Assume no data drift--setting up comparison to other no-drift scenarios
+  - Assume no population drift, setting up comparison to other samples under no population drift
 - Devise a test statistic, having known range of values under correct null hypothesis (having known _sampling distribution_)
-  - Simulate the range of KL Divergence values under no drift 
-- Calculate test statistic for observed data
-  - Calculate KL Divergence between test and baseline distributions
+  - Simulate the range of KL Divergence values under no population drift 
+- Calculate test statistic for observed data sample
+  - Calculate sample's KL Divergence
 - Measure test statistic relative to its range of values under correct null hypothesis. May compute _p-value_: probability of a test statistic with equal or greater extremity, assuming correct null hypothesis.
-  - Measure KL Divergence relative to its values in no-drift scenarios
-- Evaluate null hypothesis's reasonableness, according to implied likelihood of observed data
-  - If among no-drift scenarios, a more extreme KL is rarely seen, then question the premise of no data drift.
+  - Measure KL Divergence relative to other samples' values under no population drift
+- Evaluate null hypothesis reasonableness, according to implied likelihood of observed data
+  - If among no-population drift scenarios, a more extreme KL is rarely seen, then question the premise of no population drift.
