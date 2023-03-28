@@ -11,13 +11,15 @@ DIR_PLOTS <- paste0("figures")
 
 ```
 
-How might an autonomous data analysis system detect _data drift_: shifts in data distribution? Depending on context, shifting data distributions may imply new opportunities for fast action, or new risks to be mitigated. This post proposes an automated drift detection method, tailored for categorical data.
+# TL;DR
+
+How might a data analysis system detect _data drift_: shifts in data distribution? Depending on context, shifting data distributions may imply new opportunities for fast action, or new risks to be mitigated. In this post, first principles build to an automated drift detection method, tailored for categorical data.
 
 **The objective: detect practically significant drift between _test_ and _historical_ population distributions, in light of sample evidence.** Even under no _population_ data drift, data _samples_ drift to varying extents. To assess whether one test sample has "critically" drifted, compare to a point of reference: other samples under no population drift (available via simulation). Samples compare automatically because each one reduces to a drift statistic: Kullback-Leibler (KL) Divergence. Then, drift detection alerts when a drift statistic exceeds a critical value, tuned for the application. Reference sample visualizations help with this tuning.
 
 Our "first principles" logic chain parallels hypothesis testing from classical statistics.
 
-Check out my code implementation [here](https://github.com/abrahamalex13/bayesian-case-studies/tree/main/information_theory).
+For code, see [here](https://github.com/abrahamalex13/bayesian-case-studies/tree/main/information_theory).
 
 # A Data Drift Case Study: Lemons at Carvana
 
@@ -103,7 +105,7 @@ which intakes probability distributions _p_ and _q_,
 and partitions data values by segment _k_:
 
 $$
-  KL = \sum_{k=1}^K p_k log \frac{p_k}{q_k}
+  KL = \sum_{k=1}^K p_k \log \frac{p_k}{q_k}
 $$
 
 As a data segment's probability increasingly differs between the two distributions,
@@ -124,7 +126,7 @@ Even under no _population_ drift,
 data _samples'_ KL Divergence should vary from zero.
 And with smaller data samples, KL Divergence should vary more widely.
 We can estimate the range of sample values under no population drift,
-by repeated data sample draws.
+by repeated draws of data samples.
 
 KL Divergence's relative value provides evidence for the question: 
 how much does one probability distribution drift from a baseline distribution? 
